@@ -100,6 +100,7 @@ The number of characters of the file hash to prefix the file name with.
 
 ## Release History
 
+ * 2013-11-21   v0.1.3   track full file pathnames as supplied to the 'src' property rather than using the base filename
  * 2013-11-21   v0.1.2   Track hashes by individual file rather than by filetype
  * 2013-11-21   v0.1.1   Update readme
  * 2013-11-21   v0.1.0   Initial commit.
