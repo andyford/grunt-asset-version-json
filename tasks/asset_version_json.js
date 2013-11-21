@@ -25,8 +25,7 @@ module.exports = function(grunt) {
           algorithm: 'md5',
           format: true,
           length: 4,
-          rename: false,
-          filetype: 'default'
+          rename: false
         });
 
     this.files.forEach(function(files) {
@@ -38,11 +37,16 @@ module.exports = function(grunt) {
           return false;
         }
 
+        if ( ! fs.existsSync(dest)) {
+          grunt.log.warn(dest + ' does not exist.');
+          return false;
+        }
+
         var basename = path.basename
           , name = basename(file)
           , content = grunt.file.read(file)
           , hash = crypto.createHash(options.algorithm).update(content, options.encoding).digest('hex')
-          , jsoncontent = grunt.file.readJSON(dest)
+          , jsoncontent
           , suffix = hash.slice(0, options.length)
           , ext = path.extname(file)
           , newName = options.format ? [suffix, basename(file, ext), ext.slice(1)].join('.') : [basename(file, ext), suffix, ext.slice(1)].join('.');
@@ -57,9 +61,10 @@ module.exports = function(grunt) {
         grunt.log.writeln('  ' + file.grey + (' changed to ') + newName.green);
 
         // Write new hashes to revs/hashes tracking JSON file
-        jsoncontent[options.filetype] = suffix;
+        jsoncontent = grunt.file.readJSON(dest);
+        jsoncontent[basename(file)] = suffix;
         grunt.file.write(dest, JSON.stringify(jsoncontent, null, 2));
-        grunt.log.writeln('  ' + dest.grey + (' updated with with ' + options.filetype + ' hash: ') + suffix.green);
+        grunt.log.writeln('  ' + dest.grey + (' updated hash: ') + suffix.green);
       });
     });
   });

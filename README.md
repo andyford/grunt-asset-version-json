@@ -1,6 +1,6 @@
 # grunt-asset-version-json
 
-> Rename assets files with has and store in a JSON file
+> Rename assets files with hash and store in a JSON file
 
 ## Getting Started
 This plugin requires Grunt `~0.4.1`
@@ -18,18 +18,18 @@ grunt.loadNpmTasks('grunt-asset-version-json');
 ```
 
 ## NOTE
-This plugin is a modified version of [grunt-wp-assets by Hariadi Hinta](https://github.com/hariadi/grunt-wp-assets). Much is carried over from his plugin, but instead of modifying a WordPress-specific functions.php file with file hashes, the file hashes are saved to a JSON file like so: `{ "css": "[HASH]", "js": "[HASH]" }`.
+This plugin is a modified version of [grunt-wp-assets by Hariadi Hinta](https://github.com/hariadi/grunt-wp-assets) (Thank you, Hariadi Hinta!). Much is carried over from his plugin, but instead of modifying a WordPress-specific functions.php file with file hashes, the file hashes are saved to a JSON file like so: `{ "path/to/file.ext": "SOMEHASH", "path/to/other-file.ext": "SOMEHASH" }`.
 
-The idea is to remove the burden of storing file hashes from a WordPress-specific file and into a more universal JSON file so this plugin should be usable outside the context of WordPress projects. To access the JSON file from WordPress/PHP, I use something like:
+The idea is to remove the burden of storing file hashes from a WordPress-specific file and into a more universal and single-purpose JSON file so this plugin should be usable outside the context of WordPress projects. To access the JSON file from WordPress/PHP, I use something like:
 
 ```php
 $json = file_get_contents(get_template_directory() . '/filerevs.json');
 $filerevs = json_decode($json, true);
-wp_register_script('mysite-scripts', get_template_directory_uri() . '/assets/js/scripts.min.' . $filerevs['js'] . '.js', false, null, true);
-wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/style.min.' . $filerevs['css'] . '.css', false, null);
+wp_register_script('mysite-scripts', get_template_directory_uri() . '/assets/js/scripts.min.' . $filerevs['/assets/js/scripts.min.js'] . '.js', false, null, true);
+wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/style.min.' . $filerevs['/assets/css/style.min.css'] . '.css', false, null);
 ```
 
-(the above example assumes that the file hashes are stored to a JSON file named `filerevs.json`. The JSON file is defined in the `dest` property of the `asset_version_json` config)
+(the above example assumes that the file hashes are stored to a JSON file named `filerevs.json`. The JSON file is defined in the `dest` property of the `asset_version_json` task config)
 
 ## Usage Example
 
@@ -41,8 +41,7 @@ asset_version_json: {
         algorithm: 'sha1',
         length: 8,
         format: false,
-        rename: true,
-        filetype: 'css'
+        rename: true
     },
     src: 'assets/css/main.min.css',
     dest: 'filerevs.json'
@@ -50,13 +49,11 @@ asset_version_json: {
 },
 ```
 
-This example task will rename `assets/css/main.min.css` to `assets/css/main.min.{sha1hash}.css` and update assets reference in `filerevs.json`.
+This example task will rename `assets/css/main.min.css` to `assets/css/main.min.{sha1hash}.css` and update assets reference in `filerevs.json` which would look something like `{ "assets/css/main.min.css": "SOMEHASH" }`;
 
-## Caveats and Todos
+## Caveats
 
-Currently a limitation of this plugin is that it does not track hashes for individual files (for example: `{"path/to/file.ext": "somehash"}`) but instead only saves according to the `filetype` property like `{"css": "somehash"}`. I will be addressing this soon.
-
-If the JSON file defined by the `dest` property does not exist, then it will fail. Also if the file exists but does not already contain a JavaScript object (at least `{}`), then it will fail. I plan to fix this issue as well.
+If the JSON file defined by the `dest` property does not exist, then it will fail. Also if the file exists but does not already contain a JSON object (at least `{}`), then it will fail.
 
 
 ## Options
@@ -100,15 +97,9 @@ Default: `4`
 
 The number of characters of the file hash to prefix the file name with.
 
-### filetype
-
-Type: `String`
-Default: `'default'`
-
-The type of file such as `'css'` or `'js'`. The plugin saves the filetype as the key and the hash as the value like so `{ "css": "somehash" }`
-
 
 ## Release History
 
+ * 2013-11-21   v0.1.2   Track hashes by individual file rather than by filetype
  * 2013-11-21   v0.1.1   Update readme
  * 2013-11-21   v0.1.0   Initial commit.
