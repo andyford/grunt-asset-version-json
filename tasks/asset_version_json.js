@@ -62,7 +62,7 @@ module.exports = function(grunt) {
 
         // Write new hashes to revs/hashes tracking JSON file
         jsoncontent = grunt.file.readJSON(dest);
-        jsoncontent[basename(file)] = suffix;
+        jsoncontent[file] = suffix;
         grunt.file.write(dest, JSON.stringify(jsoncontent, null, 2));
         grunt.log.writeln('  ' + dest.grey + (' updated hash: ') + suffix.green);
       });
