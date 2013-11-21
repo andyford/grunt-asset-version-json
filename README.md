@@ -25,8 +25,8 @@ The idea is to remove the burden of storing file hashes from a WordPress-specifi
 ```php
 $json = file_get_contents(get_template_directory() . '/filerevs.json');
 $filerevs = json_decode($json, true);
-wp_register_script('mysite-scripts', get_template_directory_uri() . '/assets/js/scripts.min.' . $filerevs['/assets/js/scripts.min.js'] . '.js', false, null, true);
-wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/style.min.' . $filerevs['/assets/css/style.min.css'] . '.css', false, null);
+wp_register_script('mysite-scripts', get_template_directory_uri() . '/assets/js/scripts.min.' . $filerevs['assets/js/scripts.min.js'] . '.js', false, null, true);
+wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/style.min.' . $filerevs['assets/css/style.min.css'] . '.css', false, null);
 ```
 
 (the above example assumes that the file hashes are stored to a JSON file named `filerevs.json`. The JSON file is defined in the `dest` property of the `asset_version_json` task config)
@@ -38,10 +38,10 @@ wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/st
 asset_version_json: {
   assets: {
     options: {
-        algorithm: 'sha1',
-        length: 8,
-        format: false,
-        rename: true
+      algorithm: 'sha1',
+      length: 8,
+      format: false,
+      rename: true
     },
     src: 'assets/css/main.min.css',
     dest: 'filerevs.json'
@@ -100,6 +100,7 @@ The number of characters of the file hash to prefix the file name with.
 
 ## Release History
 
+ * 2013-11-21   v0.1.4   Update readme php/wordpress example
  * 2013-11-21   v0.1.3   track full file pathnames as supplied to the 'src' property rather than using the base filename
  * 2013-11-21   v0.1.2   Track hashes by individual file rather than by filetype
  * 2013-11-21   v0.1.1   Update readme
