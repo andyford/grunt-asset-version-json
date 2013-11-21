@@ -1,0 +1,43 @@
+{
+  "name": "grunt-asset-version-json",
+  "description": "Rename assets files with hash and store hashes in a JSON file. Modified from grunt-wp-assets by Hariadi Hinta.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/andyford/grunt-asset-version-json",
+  "author": {
+    "name": "Andy Ford",
+    "email": "andy@fordinteractive.com",
+    "url": "http://fordinteractive.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/andyford/grunt-asset-version-json"
+  },
+  "bugs": {
+    "url": "https://github.com/andyford/grunt-asset-version-json/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/andyford/grunt-asset-version-json/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "Gruntfile.js",
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib-jshint": "~0.6.0",
+    "grunt-contrib-clean": "~0.4.0",
+    "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt": "~0.4.1"
+  },
+  "peerDependencies": {
+    "grunt": "~0.4.1"
+  },
+  "keywords": [
+    "gruntplugin"
+  ]
+}
