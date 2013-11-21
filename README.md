@@ -17,73 +17,98 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 grunt.loadNpmTasks('grunt-asset-version-json');
 ```
 
-## The "asset_version_json" task
+## NOTE
+This plugin is a modified version of [grunt-wp-assets by Hariadi Hinta](https://github.com/hariadi/grunt-wp-assets). Much is carried over from his plugin, but instead of modifying a WordPress-specific functions.php file with file hashes, the file hashes are saved to a JSON file like so: `{ "css": "[HASH]", "js": "[HASH]" }`.
 
-### Overview
-In your project's Gruntfile, add a section named `asset_version_json` to the data object passed into `grunt.initConfig()`.
+The idea is to remove the burden of storing file hashes from a WordPress-specific file and into a more universal JSON file so this plugin should be usable outside the context of WordPress projects. To access the JSON file from WordPress/PHP, I use something like:
 
-```js
-grunt.initConfig({
-  asset_version_json: {
+```php
+$json = file_get_contents(get_template_directory() . '/filerevs.json');
+$filerevs = json_decode($json, true);
+wp_register_script('mysite-scripts', get_template_directory_uri() . '/assets/js/scripts.min.' . $filerevs['js'] . '.js', false, null, true);
+wp_register_style('mysite-style', get_template_directory_uri() . '/assets/css/style.min.' . $filerevs['css'] . '.css', false, null);
+```
+
+(the above example assumes that the file hashes are stored to a JSON file named `filerevs.json`. The JSON file is defined in the `dest` property of the `asset_version_json` config)
+
+## Usage Example
+
+
+```javascript
+asset_version_json: {
+  assets: {
     options: {
-      // Task-specific options go here.
+        algorithm: 'sha1',
+        length: 8,
+        format: false,
+        rename: true,
+        filetype: 'css'
     },
-    your_target: {
-      // Target-specific file lists and/or options go here.
-    },
-  },
-})
+    src: 'assets/css/main.min.css',
+    dest: 'filerevs.json'
+  }
+},
 ```
 
-### Options
+This example task will rename `assets/css/main.min.css` to `assets/css/main.min.{sha1hash}.css` and update assets reference in `filerevs.json`.
 
-#### options.separator
+## Caveats and Todos
+
+Currently a limitation of this plugin is that it does not track hashes for individual files (for example: `{"path/to/file.ext": "somehash"}`) but instead only saves according to the `filetype` property like `{"css": "somehash"}`. I will be addressing this soon.
+
+If the JSON file defined by the `dest` property does not exist, then it will fail. Also if the file exists but does not already contain a JavaScript object (at least `{}`), then it will fail. I plan to fix this issue as well.
+
+
+## Options
+
+### rename
+
+Type: `Boolean`
+Default: `false`
+
+It will rename the `src` target instead of copy.
+
+### format
+
+Type: `Boolean`
+Default: `true`
+
+File name format.
+```
+true: {hash}.{filename}.{ext}
+false: {filename}.{hash}.{ext}
+```
+
+### encoding
+
 Type: `String`
-Default value: `',  '`
+Default: `'utf8'`
 
-A string value that is used to do something with whatever.
+The file encoding.
 
-#### options.punctuation
+### algorithm
+
 Type: `String`
-Default value: `'.'`
+Default: `'md5'`
 
-A string value that is used to do something else with whatever else.
+`algorithm` is dependent on the available algorithms supported by the version of OpenSSL on the platform. Examples are `'sha1'`, `'md5'`, `'sha256'`, `'sha512'`, etc. On recent releases, `openssl list-message-digest-algorithms` will display the available digest algorithms.
 
-### Usage Examples
+### length
 
-#### Default Options
-In this example, the default options are used to do something with whatever. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result would be `Testing, 1 2 3.`
+Type: `Number`
+Default: `4`
 
-```js
-grunt.initConfig({
-  asset_version_json: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-})
-```
+The number of characters of the file hash to prefix the file name with.
 
-#### Custom Options
-In this example, custom options are used to do something else with whatever else. So if the `testing` file has the content `Testing` and the `123` file had the content `1 2 3`, the generated result in this case would be `Testing: 1 2 3 !!!`
+### filetype
 
-```js
-grunt.initConfig({
-  asset_version_json: {
-    options: {
-      separator: ': ',
-      punctuation: ' !!!',
-    },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
-  },
-})
-```
+Type: `String`
+Default: `'default'`
 
-## Contributing
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [Grunt](http://gruntjs.com/).
+The type of file such as `'css'` or `'js'`. The plugin saves the filetype as the key and the hash as the value like so `{ "css": "somehash" }`
+
 
 ## Release History
-_(Nothing yet)_
+
+ * 2013-11-21   v0.1.1   Update readme
+ * 2013-11-21   v0.1.0   Initial commit.
