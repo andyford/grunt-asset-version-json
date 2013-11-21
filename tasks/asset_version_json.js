@@ -2,6 +2,9 @@
  * grunt-asset-version-json
  * https://github.com/andyford/grunt-asset-version-json
  *
+ * Based on:
+ * https://github.com/hariadi/grunt-assets-wp
+ *
  * Copyright (c) 2013 Andy Ford
  * Licensed under the MIT license.
  */
@@ -14,41 +17,50 @@ var fs = require('fs')
 
 module.exports = function(grunt) {
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+  grunt.registerMultiTask('asset_version_json', 'Rename assets files with hash and store hashes in a JSON file', function() {
 
-  grunt.registerMultiTask('asset-version-json', 'Rename assets files with hash and store hashes in a JSON file', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
-    });
+    var dest = this.data.dest
+      , options = this.options({
+          encoding: 'utf8',
+          algorithm: 'md5',
+          format: true,
+          length: 4,
+          rename: false,
+          filetype: 'default'
+        });
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
+    this.files.forEach(function(files) {
+
+      files.src.forEach(function (file) {
+
+        if (file.length === 0) {
+          grunt.log.warn('src does not exist');
           return false;
-        } else {
-          return true;
         }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
 
-      // Handle options.
-      src += options.punctuation;
+        var basename = path.basename
+          , name = basename(file)
+          , content = grunt.file.read(file)
+          , hash = crypto.createHash(options.algorithm).update(content, options.encoding).digest('hex')
+          , jsoncontent = grunt.file.readJSON(dest)
+          , suffix = hash.slice(0, options.length)
+          , ext = path.extname(file)
+          , newName = options.format ? [suffix, basename(file, ext), ext.slice(1)].join('.') : [basename(file, ext), suffix, ext.slice(1)].join('.');
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
+        // Copy/rename file base on hash and format
+        var resultPath = path.resolve(path.dirname(file), newName);
+        if (options.rename) {
+          fs.renameSync(file, resultPath);
+        } else {
+          grunt.file.copy(file, resultPath);
+        }
+        grunt.log.writeln('  ' + file.grey + (' changed to ') + newName.green);
 
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
+        // Write new hashes to revs/hashes tracking JSON file
+        jsoncontent[options.filetype] = suffix;
+        grunt.file.write(dest, JSON.stringify(jsoncontent, null, 2));
+        grunt.log.writeln('  ' + dest.grey + (' updated with with ' + options.filetype + ' hash: ') + suffix.green);
+      });
     });
   });
-
 };
